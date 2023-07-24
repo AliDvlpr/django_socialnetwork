@@ -29,7 +29,14 @@ class WorkspacesViewSet(ModelViewSet):
         elif user.is_staff:
             return Workspaces.objects.filter(admin=user).all()
         else:
-            return Workspaces.objects.all()
+            # Step 1: Retrieve workspaces associated with the user
+            workspaces_user_belongs_to = WorkspacesUsers.objects.filter(user=user)
+
+            # Step 2: Get the list of workspace IDs for the user
+            workspace_ids = workspaces_user_belongs_to.values_list('workspace__id', flat=True)
+
+            # Step 3: Use the list of workspace IDs to filter the Workspaces queryset
+            return Workspaces.objects.filter(id__in=workspace_ids)
     
     def create(self, request, *args, **kwargs):
         serializer = WorkspacesSerializer(data=request.data, context={'request': request})
@@ -53,6 +60,8 @@ class WorkspacesViewSet(ModelViewSet):
         if workspaces.admin == self.request.user:
             workspaces.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response("you are not admin", status=status.HTTP_400_BAD_REQUEST)
 
 
 
