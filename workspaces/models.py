@@ -9,7 +9,8 @@ class Workspaces(models.Model):
     description = models.TextField(null=True, blank=True)
     image = models.image = models.ImageField(
         upload_to="software/images",
-        validators=[validate_file_size])
+        validators=[validate_file_size],
+        null=True, blank=True)
     admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_admin')
 
 class WorkspacesUsers(models.Model):
