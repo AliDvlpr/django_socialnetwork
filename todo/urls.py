@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.urls import path
+from core.views import CustomTokenCreateView
 import debug_toolbar
 
 urlpatterns = [
@@ -23,5 +25,6 @@ urlpatterns = [
     path('', include('workspaces.urls')),
     path('__debug__/', include(debug_toolbar.urls)),
     path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
+    path('auth/jwt/create', CustomTokenCreateView.as_view(), name='token_create'),
 ]
+
