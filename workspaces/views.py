@@ -8,12 +8,15 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import status, permissions
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 class WorkspacesViewSet(ModelViewSet):
     queryset = Workspaces.objects.all()
     serializer_class = WorkspacesSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_context(self):
         return {'request': self.request}
@@ -23,7 +26,10 @@ class WorkspacesViewSet(ModelViewSet):
 
         if user.is_superuser:
             return Workspaces.objects.all()
-        return Workspaces.objects.filter(admin=user).all()
+        elif user.is_staff:
+            return Workspaces.objects.filter(admin=user).all()
+        else:
+            return Workspaces.objects.all()
     
     def create(self, request, *args, **kwargs):
         serializer = WorkspacesSerializer(data=request.data, context={'request': request})
@@ -47,8 +53,7 @@ class WorkspacesViewSet(ModelViewSet):
         if workspaces.admin == self.request.user:
             workspaces.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({'error': 'You are not authorized to delete this workspace.'}, status=status.HTTP_403_FORBIDDEN)
+
 
 
 class WorkspacesUsersViewSet(ModelViewSet):
